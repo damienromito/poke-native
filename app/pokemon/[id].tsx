@@ -8,11 +8,11 @@ import Row from "../components/Row";
 import ThemeText from "../components/ThemeText";
 import { Colors } from "../constants/Colors";
 import Icons from "../constants/Icons";
-import { getPokemonArtwork, getPokemonNumberFromId } from "../helpers/pokemon";
+import { getPokemonArtwork, getPokemonNumberFromId, pokemonDefaultStats } from "../helpers/pokemon";
 import { useFetchQuery } from "../hooks/useFetchQuery";
 import { useThemeColors } from "../hooks/useThemeColors";
 import PokemonStat from "../components/pokemon/PokemonStat";
-// import pokeballBgImage from "@/assets/images/pokeball-bg.png"
+
 
 
 export default function Pokemon() {
@@ -25,7 +25,7 @@ export default function Pokemon() {
   const mainType = pokemon?.types?.[0]?.type.name
   const mainColor = (mainType ? Colors.type[mainType] : colors.primary) || colors.primary
   return (
-    <RootView style={{ backgroundColor: mainColor }}>
+    <RootView backgroundColor={mainColor}>
       <View>
         <Image source={require("@/assets/images/pokeball-bg.png")} style={styles.pokeballBg} />
         <Row style={[styles.header]} gap={8}>
@@ -49,10 +49,10 @@ export default function Pokemon() {
               <PokemonSpec icon={Icons.height} title={`${pokemon?.height} m`} specName="Height" style={{ borderRightColor: colors.grayLight, borderRightWidth: 1, borderStyle: "solid" }} />
               <PokemonSpec title={pokemon?.abilities.map(a => a.ability.name).join("\n") || ""} specName="Moves" />
             </Row>
-            <ThemeText>{description}</ThemeText>
+            <ThemeText style={styles.description}>{description}</ThemeText>
             <ThemeText variant="subtitle1" style={{ color: mainColor }}>Base Stats</ThemeText>
             <View style={styles.stats}>
-              {pokemon?.stats.map((stat, index) => {
+              {(pokemon?.stats || pokemonDefaultStats).map((stat, index) => {
                 return <PokemonStat name={stat.stat.name} value={stat.base_stat} color={mainColor} key={index} />
               })}
             </View>
@@ -97,8 +97,12 @@ const styles = StyleSheet.create({
     gap: 16,
     alignItems: "center",
   },
+  description: {
+    minHeight: 30
+  },
   types: {
-    gap: 16
+    gap: 16,
+    height: 20
   },
   borderSpec: {
     borderRightWidth: 1,
