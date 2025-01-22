@@ -12,31 +12,38 @@ import { getPokemonArtwork, getPokemonNumberFromId, pokemonDefaultStats } from "
 import { useFetchQuery } from "../hooks/useFetchQuery";
 import { useThemeColors } from "../hooks/useThemeColors";
 import PokemonStat from "../components/pokemon/PokemonStat";
-
+import { Audio } from 'expo-av';
+import PokemonArtwork from "../components/pokemon/PokemonArtwork";
 
 
 export default function Pokemon() {
   const { id } = useLocalSearchParams() as { id: string }
   const { data: pokemon } = useFetchQuery("/pokemon/[id]", { id })
+  console.log('pokemon:', pokemon)
   const { data: species } = useFetchQuery("/pokemon-species/[id]", { id })
   const description = species?.flavor_text_entries[0].flavor_text.replaceAll("\n", ". ") || ""
 
   const colors = useThemeColors()
   const mainType = pokemon?.types?.[0]?.type.name
   const mainColor = (mainType ? Colors.type[mainType] : colors.primary) || colors.primary
+
+
   return (
     <RootView backgroundColor={mainColor}>
       <View>
         <Image source={require("@/assets/images/pokeball-bg.png")} style={styles.pokeballBg} />
-        <Row style={[styles.header]} gap={8}>
+        <Row style={[styles.topbar]} gap={8}>
           <Pressable onPress={router.back}>
             <Image source={Icons.arrowBack} tintColor={colors.white} style={[styles.backIcon]} />
           </Pressable>
+
           <ThemeText variant="headline" color="white" style={[styles.pokemonName]}>{pokemon?.name}</ThemeText>
           <ThemeText variant="subtitle2" color="white"  >{getPokemonNumberFromId(Number(id))}</ThemeText>
         </Row>
         <View>
-          <Image source={{ uri: getPokemonArtwork(Number(id)) }} style={[styles.artwork]} />
+          <Row style={styles.header}>
+            <PokemonArtwork pokemonId={id} cry={pokemon?.cries.latest} />
+          </Row>
           <Card style={styles.card}>
             <Row style={styles.types}>
               {pokemon?.types.map((type, index) => {
@@ -65,7 +72,7 @@ export default function Pokemon() {
 
 const styles = StyleSheet.create({
 
-  header: {
+  topbar: {
     paddingHorizontal: 24,
     paddingVertical: 20,
     alignItems: "center",
@@ -83,13 +90,13 @@ const styles = StyleSheet.create({
     right: 8,
     top: 8,
   },
-  artwork: {
-    width: 200,
-    height: 200,
+  header: {
     position: "absolute",
     zIndex: 1,
-    alignSelf: "center"
+    justifyContent: "center",
+    width: "100%"
   },
+
   card: {
     padding: 20,
     marginTop: 150,
