@@ -9,6 +9,8 @@ const Icons = {
   arrowBack: require('@/assets/images/arrow_back.png'),
   weight: require('@/assets/images/weight.png'),
   height: require('@/assets/images/straighten.png'),
+  chevronLeft: require('@/assets/images/chevron_left.png'),
+  chevronRight: require('@/assets/images/chevron_right.png'),
 
 }
 

@@ -1,32 +1,45 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { Image, Pressable, StyleSheet, View } from "react-native";
 import Card from "../components/Card";
+import PokemonArtwork from "../components/pokemon/PokemonArtwork";
 import PokemonSpec from "../components/pokemon/PokemonSpec";
+import PokemonStat from "../components/pokemon/PokemonStat";
 import PokemonTypeBadge from "../components/pokemon/PokemonTypeBadge";
 import RootView from "../components/RootView";
 import Row from "../components/Row";
 import ThemeText from "../components/ThemeText";
 import { Colors } from "../constants/Colors";
 import Icons from "../constants/Icons";
-import { getPokemonArtwork, getPokemonNumberFromId, pokemonDefaultStats } from "../helpers/pokemon";
+import { getPokemonNumberFromId, pokemonDefaultStats } from "../helpers/pokemon";
 import { useFetchQuery } from "../hooks/useFetchQuery";
 import { useThemeColors } from "../hooks/useThemeColors";
-import PokemonStat from "../components/pokemon/PokemonStat";
-import { Audio } from 'expo-av';
-import PokemonArtwork from "../components/pokemon/PokemonArtwork";
 
 
 export default function Pokemon() {
-  const { id } = useLocalSearchParams() as { id: string }
-  const { data: pokemon } = useFetchQuery("/pokemon/[id]", { id })
+  const params = useLocalSearchParams() as { id: string }
+  const { data: pokemon } = useFetchQuery("/pokemon/[id]", { id: params.id })
+  const id = parseInt(params.id)
   console.log('pokemon:', pokemon)
-  const { data: species } = useFetchQuery("/pokemon-species/[id]", { id })
+  const { data: species } = useFetchQuery("/pokemon-species/[id]", { id: params.id })
   const description = species?.flavor_text_entries[0].flavor_text.replaceAll("\n", ". ") || ""
 
   const colors = useThemeColors()
   const mainType = pokemon?.types?.[0]?.type.name
   const mainColor = (mainType ? Colors.type[mainType] : colors.primary) || colors.primary
 
+  const onNext = () => {
+    loadPokemon(id + 1)
+  }
+  const onPrev = () => {
+    loadPokemon(id - 1)
+  }
+  const loadPokemon = (id: number) => {
+    router.replace({ pathname: '/pokemon/[id]', params: { id } })
+  }
+
+  const isFirst = id === 1
+  console.log('isFirst:', isFirst)
+  const isLast = id === 151
 
   return (
     <RootView backgroundColor={mainColor}>
@@ -36,14 +49,28 @@ export default function Pokemon() {
           <Pressable onPress={router.back}>
             <Image source={Icons.arrowBack} tintColor={colors.white} style={[styles.backIcon]} />
           </Pressable>
-
           <ThemeText variant="headline" color="white" style={[styles.pokemonName]}>{pokemon?.name}</ThemeText>
-          <ThemeText variant="subtitle2" color="white"  >{getPokemonNumberFromId(Number(id))}</ThemeText>
+          <ThemeText variant="subtitle2" color="white"  >{getPokemonNumberFromId(id)}</ThemeText>
         </Row>
         <View>
+
           <Row style={styles.header}>
-            <PokemonArtwork pokemonId={id} cry={pokemon?.cries.latest} />
+            {isFirst
+              ? <View style={styles.navArrow} />
+              : <Pressable onPress={onPrev}>
+                <Image source={Icons.chevronLeft} style={styles.navArrow} tintColor={colors.white} />
+              </Pressable>
+            }
+            <PokemonArtwork pokemonId={params.id} cry={pokemon?.cries.latest} />
+            {isLast
+              ? <View style={styles.navArrow} />
+              : <Pressable onPress={onNext}>
+                <Image source={Icons.chevronRight} style={styles.navArrow} tintColor={colors.white} />
+              </Pressable>
+            }
+
           </Row>
+
           <Card style={styles.card}>
             <Row style={styles.types}>
               {pokemon?.types.map((type, index) => {
@@ -93,10 +120,14 @@ const styles = StyleSheet.create({
   header: {
     position: "absolute",
     zIndex: 1,
-    justifyContent: "center",
+    justifyContent: "space-between",
     width: "100%"
   },
-
+  navArrow: {
+    width: 24,
+    height: 24,
+    paddingHorizontal: 20
+  },
   card: {
     padding: 20,
     marginTop: 150,
