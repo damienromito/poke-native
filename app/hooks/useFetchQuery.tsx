@@ -47,17 +47,17 @@ type API = {
 }
 
 export const useFetchQuery = <T extends keyof API>(path: T, params?: Record<string, string>) => {
-  let pathWithParams: string = path
+  let pathWithParams: string = pokemonEndpoint + path
   if (params) {
     Object.entries(params).forEach(([key, value]) => {
-      pathWithParams = path.replace(`[${key}]`, value)
+      pathWithParams = pathWithParams.replace(`[${key}]`, value)
     })
   }
   return useQuery({
     queryKey: [pathWithParams],
     queryFn: async () => {
       await wait()
-      return fetch(pokemonEndpoint + pathWithParams)
+      return fetch(pathWithParams)
         .then(r => r.json() as Promise<API[T]>)
     }
   })

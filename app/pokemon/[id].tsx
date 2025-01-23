@@ -19,7 +19,6 @@ export default function Pokemon() {
   const params = useLocalSearchParams() as { id: string }
   const { data: pokemon } = useFetchQuery("/pokemon/[id]", { id: params.id })
   const id = parseInt(params.id)
-  console.log('pokemon:', pokemon)
   const { data: species } = useFetchQuery("/pokemon-species/[id]", { id: params.id })
   const description = species?.flavor_text_entries[0].flavor_text.replaceAll("\n", ". ") || ""
 
@@ -34,11 +33,10 @@ export default function Pokemon() {
     loadPokemon(id - 1)
   }
   const loadPokemon = (id: number) => {
-    router.replace({ pathname: '/pokemon/[id]', params: { id } })
+    router.replace({ pathname: '/pokemon/[id]', params: { id: id.toString() } })
   }
 
   const isFirst = id === 1
-  console.log('isFirst:', isFirst)
   const isLast = id === 151
 
   return (
